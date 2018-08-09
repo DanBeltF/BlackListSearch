@@ -9,6 +9,24 @@ package edu.eci.arsw.threads;
  *
  * @author hcadavid
  */
-public class CountThread {
+public class CountThread implements Runnable{
+    
+    int a,b;
+
+    public CountThread() {
+    }
+    
+
+    CountThread(int a, int b) {
+        this.a=a;
+        this.b=b;
+    }
+
+    @Override
+    public void run() {
+        for(int i=a;i<=b;i++){
+            System.out.println(i);
+        }
+    }
     
 }
