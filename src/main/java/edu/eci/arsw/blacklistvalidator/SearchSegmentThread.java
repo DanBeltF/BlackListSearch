@@ -11,6 +11,8 @@ package edu.eci.arsw.blacklistvalidator;
  */
 public class SearchSegmentThread extends Thread{
     
+    int lima,limb;
+    
     
     @Override
     public void run(){
