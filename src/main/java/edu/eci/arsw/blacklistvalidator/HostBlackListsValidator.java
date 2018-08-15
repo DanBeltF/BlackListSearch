@@ -27,6 +27,7 @@ public class HostBlackListsValidator {
      * BLACK_LIST_ALARM_COUNT, the search is finished, the host reported as
      * NOT Trustworthy, and the list of the five blacklists returned.
      * @param ipaddress suspicious host's IP address.
+     * @param n quantity of threads
      * @return  Blacklists numbers where the given host's IP address was found.
      */
     public List<Integer> checkHost(String ipaddress, int n){
@@ -39,6 +40,32 @@ public class HostBlackListsValidator {
         
         int checkedListsCount=0;
         
+        int div=skds.getRegisteredServersCount()/n;
+        int mod=skds.getRegisteredServersCount()%n;
+        int inic=0;
+        
+        SearchSegmentThread[] sst = new SearchSegmentThread[n];
+        
+        for(int i=0;i<=n-1;i++){
+            if(i!=n-1){
+                sst[i]= new SearchSegmentThread(inic+i*div,div);
+                sst[i].start();
+            }
+            else{
+                sst[i]= new SearchSegmentThread(inic+i*div,div+mod);
+                sst[i].start();
+            }
+        }
+        
+        for(int i=0;i<=n-1;i++){
+            try {
+                sst[i].join();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(HostBlackListsValidator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        //---------
         for (int i=0;i<skds.getRegisteredServersCount() && ocurrencesCount<BLACK_LIST_ALARM_COUNT;i++){
             checkedListsCount++;
             
