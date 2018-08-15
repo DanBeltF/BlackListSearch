@@ -14,10 +14,11 @@ import java.util.LinkedList;
  */
 public class SearchSegmentThread extends Thread{
     
-    int lima,limb;
+    int lima=0;
+    int limb=0;
     String ipaddress;
-    int checkedListsCount;
-    LinkedList<Integer> blackListOcurrences;
+    int checkedListsCount=0;
+    LinkedList<Integer> blackListOcurrences= new LinkedList<>();
     HostBlacklistsDataSourceFacade skds;
     int ocurrencesCount;
     
@@ -25,10 +26,10 @@ public class SearchSegmentThread extends Thread{
         this.lima=a;
         this.limb=b;
         this.ipaddress=ipaddress;
-        this.checkedListsCount=0;
-        this.ocurrencesCount=0;
-        blackListOcurrences = new LinkedList<>();
-        skds=HostBlacklistsDataSourceFacade.getInstance();
+        //this.checkedListsCount=0;
+        //this.ocurrencesCount=0;
+        //blackListOcurrences = new LinkedList<>();
+        
     }
     
     @Override
@@ -36,8 +37,8 @@ public class SearchSegmentThread extends Thread{
         if (lima < 0 || limb < 0) {
             throw new RuntimeException("Invalid Interval");
         }
-        
-        for (int i=lima;i<limb && ocurrencesCount < HostBlackListsValidator.getBlackListAlarmCount();i++){
+        skds=HostBlacklistsDataSourceFacade.getInstance();
+        for (int i=lima;i<limb /*&& ocurrencesCount < HostBlackListsValidator.getBlackListAlarmCount()*/;i++){
             checkedListsCount++;
             if (skds.isInBlackListServer(i, ipaddress)){
                 

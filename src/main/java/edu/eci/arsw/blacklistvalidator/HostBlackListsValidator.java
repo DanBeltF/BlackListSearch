@@ -49,13 +49,20 @@ public class HostBlackListsValidator {
         
         for(int i=0;i<=n-1;i++){
             if(i!=n-1){
-                sst[i]= new SearchSegmentThread(inic+i*div,div,ipaddress);
-                sst[i].start();
+                //sst[i]= new SearchSegmentThread(inic+i*div,div,ipaddress);
+                sst[i]= new SearchSegmentThread(inic, skds.getRegisteredServersCount(), ipaddress);
+                //sst[i].start();
             }
             else{
-                sst[i]= new SearchSegmentThread(inic+i*div,div+mod,ipaddress);
-                sst[i].start();
+                //sst[i]= new SearchSegmentThread(inic+i*div,div+mod,ipaddress);
+                sst[i]= new SearchSegmentThread(inic, inic+div, ipaddress);
+                //sst[i].start();
+                inic+=div;
             }
+        }
+        
+        for (int i=0;i<n;i++){
+            sst[i].start();
         }
         
         for(int i=0;i<=n-1;i++){
@@ -67,7 +74,11 @@ public class HostBlackListsValidator {
         }
         
         for(SearchSegmentThread s : sst){
+            //System.out.println(s);
+            //System.out.println(checkedListsCount);
+            //System.out.println(s.getCheckedLists());
             checkedListsCount+=s.getCheckedLists();
+            //System.out.println(checkedListsCount);
             ocurrencesCount+=s.getOcurrences();
             blackListOcurrences.addAll(s.getBlackList());
         }
