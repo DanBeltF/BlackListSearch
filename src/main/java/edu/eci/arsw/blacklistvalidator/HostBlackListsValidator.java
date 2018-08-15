@@ -42,17 +42,18 @@ public class HostBlackListsValidator {
         
         int div=skds.getRegisteredServersCount()/n;
         int mod=skds.getRegisteredServersCount()%n;
+        
         int inic=0;
         
         SearchSegmentThread[] sst = new SearchSegmentThread[n];
         
         for(int i=0;i<=n-1;i++){
             if(i!=n-1){
-                sst[i]= new SearchSegmentThread(inic+i*div,div);
+                sst[i]= new SearchSegmentThread(inic+i*div,div,ipaddress);
                 sst[i].start();
             }
             else{
-                sst[i]= new SearchSegmentThread(inic+i*div,div+mod);
+                sst[i]= new SearchSegmentThread(inic+i*div,div+mod,ipaddress);
                 sst[i].start();
             }
         }
@@ -65,16 +66,10 @@ public class HostBlackListsValidator {
             }
         }
         
-        //---------
-        for (int i=0;i<skds.getRegisteredServersCount() && ocurrencesCount<BLACK_LIST_ALARM_COUNT;i++){
-            checkedListsCount++;
-            
-            if (skds.isInBlackListServer(i, ipaddress)){
-                
-                blackListOcurrences.add(i);
-                
-                ocurrencesCount++;
-            }
+        for(SearchSegmentThread s : sst){
+            checkedListsCount+=s.getCheckedLists();
+            ocurrencesCount+=s.getOcurrences();
+            blackListOcurrences.addAll(s.getBlackList());
         }
         
         if (ocurrencesCount>=BLACK_LIST_ALARM_COUNT){
@@ -89,9 +84,12 @@ public class HostBlackListsValidator {
         return blackListOcurrences;
     }
     
-    
     private static final Logger LOG = Logger.getLogger(HostBlackListsValidator.class.getName());
     
+    
+    public static int getBlackListAlarmCount(){
+        return BLACK_LIST_ALARM_COUNT;
+    }
     
     
 }
