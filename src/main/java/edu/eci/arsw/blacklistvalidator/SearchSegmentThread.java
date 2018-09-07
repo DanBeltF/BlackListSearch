@@ -14,39 +14,48 @@ import java.util.LinkedList;
  */
 public class SearchSegmentThread extends Thread{
     
-    int lima=0;
-    int limb=0;
-    String ipaddress;
-    int checkedListsCount=0;
-    LinkedList<Integer> blackListOcurrences= new LinkedList<>();
-    HostBlacklistsDataSourceFacade skds;
-    int ocurrencesCount;
+    private int inicio=0;
+    private int fin=0;
+    private String ipAddress;
     
-    public SearchSegmentThread(int a, int b, String ipaddress){
-        this.lima=a;
-        this.limb=b;
-        this.ipaddress=ipaddress;
-        //this.checkedListsCount=0;
-        //this.ocurrencesCount=0;
-        //blackListOcurrences = new LinkedList<>();
-        
+    private int checkedListsCount=0;
+    private int ocurrencesCount;
+    private LinkedList<Integer> blackListOcurrences= new LinkedList<>();
+    
+    private HostBlacklistsDataSourceFacade skds;
+    
+    
+    public SearchSegmentThread(int a, int b, String ipAddress){
+        this.inicio=a;
+        this.fin=b;
+        this.ipAddress=ipAddress;
     }
     
+    /**
+     * Check the given host's IP address in a portion of the available black lists
+     */
     @Override
     public void run(){
-        if (lima < 0 || limb < 0) {
+        skds=HostBlacklistsDataSourceFacade.getInstance();
+        
+        if (inicio < 0 || inicio > skds.getRegisteredServersCount() 
+                || fin < 0 || fin > skds.getRegisteredServersCount()) {
             throw new RuntimeException("Invalid Interval");
         }
-        skds=HostBlacklistsDataSourceFacade.getInstance();
-        for (int i=lima;i<limb /*&& ocurrencesCount < HostBlackListsValidator.getBlackListAlarmCount()*/;i++){
+        
+        for (int i=inicio; i<fin; i++){
             checkedListsCount++;
-            if (skds.isInBlackListServer(i, ipaddress)){
+            
+            if (skds.isInBlackListServer(i, ipAddress)){
                 
                 blackListOcurrences.add(i);
                 
                 ocurrencesCount++;
             }
-        
+            
+            if (ocurrencesCount == HostBlackListsValidator.getBlackListAlarmCount()){
+                break;
+            }
         }        
     }
     

@@ -26,68 +26,56 @@ public class HostBlackListsValidator {
      * The search is not exhaustive: When the number of occurrences is equal to
      * BLACK_LIST_ALARM_COUNT, the search is finished, the host reported as
      * NOT Trustworthy, and the list of the five blacklists returned.
-     * @param ipaddress suspicious host's IP address.
+     * @param ipAddress suspicious host's IP address.
      * @param n quantity of threads
      * @return  Blacklists numbers where the given host's IP address was found.
      */
-    public List<Integer> checkHost(String ipaddress, int n){
+    public List<Integer> checkHost(String ipAddress, int n){
         
         LinkedList<Integer> blackListOcurrences=new LinkedList<>();
         
         int ocurrencesCount=0;
         
-        HostBlacklistsDataSourceFacade skds=HostBlacklistsDataSourceFacade.getInstance();
-        
         int checkedListsCount=0;
         
-        int div=skds.getRegisteredServersCount()/n;
-        int mod=skds.getRegisteredServersCount()%n;
+        HostBlacklistsDataSourceFacade skds=HostBlacklistsDataSourceFacade.getInstance();
         
-        int inic=0;
+        int div=skds.getRegisteredServersCount()/n;
+        
+        int ini=0;
         
         SearchSegmentThread[] sst = new SearchSegmentThread[n];
         
         for(int i=0;i<=n-1;i++){
             if(i!=n-1){
-                //sst[i]= new SearchSegmentThread(inic+i*div,div,ipaddress);
-                sst[i]= new SearchSegmentThread(inic, skds.getRegisteredServersCount(), ipaddress);
-                //sst[i].start();
+                sst[i] = new SearchSegmentThread(ini,ini+div,ipAddress);
+                ini+=div;
             }
             else{
-                //sst[i]= new SearchSegmentThread(inic+i*div,div+mod,ipaddress);
-                sst[i]= new SearchSegmentThread(inic, inic+div, ipaddress);
-                //sst[i].start();
-                inic+=div;
+                sst[i] = new SearchSegmentThread(ini,skds.getRegisteredServersCount(),ipAddress);
             }
-        }
-        
-        for (int i=0;i<n;i++){
             sst[i].start();
         }
-        
+              
         for(int i=0;i<=n-1;i++){
-            try {
+            try{
                 sst[i].join();
             } catch (InterruptedException ex) {
-                Logger.getLogger(HostBlackListsValidator.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, "Failed on joining the thread: "+sst[i].getName(), ex);
             }
         }
         
         for(SearchSegmentThread s : sst){
-            //System.out.println(s);
-            //System.out.println(checkedListsCount);
-            //System.out.println(s.getCheckedLists());
             checkedListsCount+=s.getCheckedLists();
-            //System.out.println(checkedListsCount);
             ocurrencesCount+=s.getOcurrences();
             blackListOcurrences.addAll(s.getBlackList());
         }
         
         if (ocurrencesCount>=BLACK_LIST_ALARM_COUNT){
-            skds.reportAsNotTrustworthy(ipaddress);
+            skds.reportAsNotTrustworthy(ipAddress);
         }
         else{
-            skds.reportAsTrustworthy(ipaddress);
+            skds.reportAsTrustworthy(ipAddress);
         }                
         
         LOG.log(Level.INFO, "Checked Black Lists:{0} of {1}", new Object[]{checkedListsCount, skds.getRegisteredServersCount()});
@@ -100,7 +88,7 @@ public class HostBlackListsValidator {
     
     public static int getBlackListAlarmCount(){
         return BLACK_LIST_ALARM_COUNT;
-    }
+    }  
     
     
 }
